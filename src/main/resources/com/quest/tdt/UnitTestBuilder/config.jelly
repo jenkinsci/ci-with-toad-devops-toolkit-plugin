@@ -1,0 +1,51 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:block>
+        <fieldset>
+            <legend>${%Oracle Database}</legend>
+            <table style="width:100%">
+                <f:entry title="${%Connection string}" field="connection">
+                    <f:textbox />
+                </f:entry>
+            </table>
+        </fieldset>
+    </f:block>
+
+    <f:block>
+        <fieldset>
+            <legend>${%Test Options}</legend>
+            <table style="width:100%">
+                <f:entry title="${%Objects to test}">
+                    <f:repeatableProperty add="${%Add object}" field="objects" />
+                </f:entry>
+            </table>
+        </fieldset>
+    </f:block>
+
+
+    <f:block>
+        <fieldset>
+            <legend>${%Report}</legend>
+            <table style="width:100%">
+                <f:entry title="${%Output directory}" field="folder">
+                    <f:textbox />
+                </f:entry>
+
+                <f:block>
+                    <fieldset>
+                        <legend>${%Format}</legend>
+                        <table style="width:100%">
+                            <f:entry title="TXT" field="txt">
+                                <f:checkbox />
+                            </f:entry>
+
+                            <f:entry title="XML" field="xml">
+                                <f:checkbox />
+                            </f:entry>
+                        </table>
+                    </fieldset>
+                </f:block>
+            </table>
+        </fieldset>
+    </f:block>
+</j:jelly>

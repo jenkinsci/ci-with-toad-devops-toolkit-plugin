@@ -1,0 +1,46 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:block>
+        <fieldset>
+            <legend>${%Oracle Database}</legend>
+            <table style="width:100%">
+                <f:entry title="${%Connection string}" field="connection">
+                    <f:textbox />
+                </f:entry>
+            </table>
+        </fieldset>
+    </f:block>
+
+    <f:block>
+        <fieldset>
+            <legend>${%Script Options}</legend>
+            <table style="width:100%">
+                <p>${%Source}</p>
+                <f:radioBlock name="sourceType" value="script" title="${%Script}" checked="${instance.isSourceType('script')}" inline="true">
+                    <f:entry field="script">
+                        <f:textarea />
+                    </f:entry>
+                </f:radioBlock>
+                <f:radioBlock name="sourceType" value="file" title="${%File}" checked="${instance.isSourceType('file')}" inline="true">
+                    <f:entry title="${%Path}" field="file">
+                        <f:textbox />
+                    </f:entry>
+                </f:radioBlock>
+            </table>
+        </fieldset>
+    </f:block>
+
+    <f:block>
+        <fieldset>
+            <legend>${%Output}</legend>
+            <table style="width:100%">
+                <f:entry title="${%File path}" field="output">
+                    <f:textbox />
+                </f:entry>
+                <f:entry title="${%Maximum returned rows}">
+                    <f:number field="maxRows" default="10" />
+                </f:entry>
+            </table>
+        </fieldset>
+    </f:block>
+</j:jelly>
