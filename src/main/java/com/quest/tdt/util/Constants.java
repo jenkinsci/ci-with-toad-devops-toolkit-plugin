@@ -9,6 +9,7 @@ public class Constants {
     public static final String LOG_HEADER_UT_ERR = "[Toad DevOps Toolkit] - Unit Test: Error: ";
 
     public static final String PS = "powershell ";
+    public static final String FAILURE = "FAILURE";
 
     public static final String PS_CA = "com/quest/tdt/CodeAnalysis.ps1";
     public static final String PS_S = "com/quest/tdt/Script.ps1";

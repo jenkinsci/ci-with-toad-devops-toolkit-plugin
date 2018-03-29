@@ -50,7 +50,7 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
         CodeAnalysisReport expReport = expandReport(vars, report);
 
         CodeAnalysisPowerShell powerShell = new CodeAnalysisPowerShell(expConnection, expObjects, expObjectFolders, ruleSet, expReport);
-        powerShell.run(listener);
+        powerShell.run(run, listener);
     }
 
     private ArrayList<CodeAnalysisDBObject> expandObjects(EnvVars vars, List<CodeAnalysisDBObject> objects) {

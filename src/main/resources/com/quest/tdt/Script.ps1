@@ -1,3 +1,5 @@
+#Requires -Version 2
+
 Param (
   [String] $Connection,
   [Int] $MaxRows,
@@ -17,7 +19,6 @@ $DecodedOutputFile = [System.Text.Encoding]::UTF8.GetString([System.Convert]::Fr
 # Start TDT
 $TDT = New-Object -ComObject 'Toad.ToadAutoObject'
 try {
-
   # Set script parameters
   $Script = $TDT.Scripts.Add()
   $Script.Connection = $TDT.Connections.NewConnection($DecodedConnection)
@@ -29,6 +30,16 @@ try {
   # Execute script
   $Script.Execute()
 
+  # Display the script execution time
+  Write-Output ("Script execution time: {0}" -f $Script.ExecutionTime)
+
+  if ($Script.ErrorCount -gt 0) {
+    Write-Output ("Script errors: {0}" -f $Script.ErrorCount)
+    Write-Output 'FAILURE'
+  }
+} catch {
+  Write-Output $_.Exception.Message
+  Write-Output 'FAILURE'
 } finally {
   $TDT.Quit()
 }

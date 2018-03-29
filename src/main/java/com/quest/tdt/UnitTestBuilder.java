@@ -49,7 +49,7 @@ public class UnitTestBuilder extends Builder implements SimpleBuildStep {
         String expFolder = vars.expand(folder);
 
         UnitTestPowerShell script = new UnitTestPowerShell(expConnection, expObjects, expFolder, txt, xml);
-        script.run(listener);
+        script.run(run, listener);
     }
 
     private ArrayList<UnitTestDBObject> expandObjects(EnvVars vars, List<UnitTestDBObject> objects) {

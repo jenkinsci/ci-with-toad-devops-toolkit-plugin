@@ -1,3 +1,5 @@
+#Requires -Version 2
+
 Param (
   [String] $Connection,
   [String[]] $Objects,
@@ -45,7 +47,6 @@ $DecodedOutputPath = [System.Text.Encoding]::UTF8.GetString([System.Convert]::Fr
 # Start TDT
 $TDT = New-Object -ComObject 'Toad.ToadAutoObject'
 try {
-
   $TDT.UnitTesting.Connection = $TDT.Connections.NewConnection($DecodedConnection)
 
   # Set database objects
@@ -69,6 +70,12 @@ try {
 
     Write-Output ("Running... {0} Status: {1}" -f $UnitTest.Name, $UnitTest.LastRunStatus)
 
+    # Report failures to the caller
+    if ($RunStatus -ne 'SUCCESS') {
+      # This will be interpreted by the caller to fail the build step
+      Write-Output 'FAILURE'
+    }
+
     if ($TXT) {
       $OutputFile = "{0} - {1}.txt" -f $UnitTest.Name, $UnitTest.LastRunStatus
       $OutputFile = Remove-InvalidFileNameChars $OutputFile
@@ -83,7 +90,9 @@ try {
       $UnitTest.GetLastRunReportXML() | Out-File $OutputFile
     }
   }
-
+} catch {
+  Write-Output $_.Exception.Message
+  Write-Output 'FAILURE'
 } finally {
   $TDT.Quit()
 }

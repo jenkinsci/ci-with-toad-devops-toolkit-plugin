@@ -1,5 +1,6 @@
 package com.quest.tdt;
 
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import com.quest.tdt.util.StreamThread;
@@ -20,7 +21,9 @@ public class CodeAnalysisPowerShell {
     private int ruleSet;
     private CodeAnalysisReport report;
 
-    public CodeAnalysisPowerShell(String connection, List<CodeAnalysisDBObject> objects, List<CodeAnalysisDBObjectFolder> objectFolders, int ruleSet, CodeAnalysisReport report) {
+    public CodeAnalysisPowerShell(
+            String connection, List<CodeAnalysisDBObject> objects, List<CodeAnalysisDBObjectFolder> objectFolders,
+            int ruleSet, CodeAnalysisReport report) {
         this.connection = connection;
         this.objects = objects;
         this.objectFolders = objectFolders;
@@ -28,7 +31,7 @@ public class CodeAnalysisPowerShell {
         this.report = report;
     }
 
-    public void run(TaskListener listener) throws IOException {
+    public void run(Run<?, ?> run, TaskListener listener) throws IOException {
         InputStream resourceStream = this.getClass().getClassLoader().getResourceAsStream(Constants.PS_CA);
 
         // Create a temporary file to store our powershell resource stream.
@@ -45,14 +48,16 @@ public class CodeAnalysisPowerShell {
                 .concat(getReportFolder())
                 .concat(getReportFormats());
 
-        listener.getLogger().println(Constants.LOG_HEADER_CA + "Performing analysis...");
+        listener.getLogger().println(Constants.LOG_HEADER_CA + "Preparing analysis...");
 
         Runtime runtime = Runtime.getRuntime();
         Process process = runtime.exec(command);
         process.getOutputStream().close();
 
-        StreamThread outputStreamThread = new StreamThread(process.getInputStream(), listener, Constants.LOG_HEADER_CA);
-        StreamThread errorStreamThread = new StreamThread(process.getErrorStream(), listener, Constants.LOG_HEADER_CA_ERR);
+        StreamThread outputStreamThread = new StreamThread(
+                process.getInputStream(), run, listener, Constants.LOG_HEADER_CA);
+        StreamThread errorStreamThread = new StreamThread(
+                process.getErrorStream(), run, listener, Constants.LOG_HEADER_CA_ERR);
 
         outputStreamThread.start();
         errorStreamThread.start();

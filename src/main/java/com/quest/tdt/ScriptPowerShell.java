@@ -1,5 +1,6 @@
 package com.quest.tdt;
 
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import com.quest.tdt.util.StreamThread;
 import com.quest.tdt.util.Constants;
@@ -23,7 +24,7 @@ public class ScriptPowerShell {
         this.outputPath = outputPath;
     }
 
-    public void run(TaskListener listener) throws IOException {
+    public void run(Run<?, ?> run, TaskListener listener) throws IOException {
         InputStream resourceStream = this.getClass().getClassLoader().getResourceAsStream(Constants.PS_S);
 
         // Create a temporary file to store our powershell resource stream.
@@ -43,8 +44,10 @@ public class ScriptPowerShell {
         Process process = runtime.exec(command);
         process.getOutputStream().close();
 
-        StreamThread outputStreamThread = new StreamThread(process.getInputStream(), listener, Constants.LOG_HEADER_S);
-        StreamThread errorStreamThread = new StreamThread(process.getErrorStream(), listener, Constants.LOG_HEADER_S_ERR);
+        StreamThread outputStreamThread = new StreamThread(
+                process.getInputStream(), run, listener, Constants.LOG_HEADER_S);
+        StreamThread errorStreamThread = new StreamThread(
+                process.getErrorStream(), run, listener, Constants.LOG_HEADER_S_ERR);
 
         outputStreamThread.start();
         errorStreamThread.start();
@@ -61,8 +64,6 @@ public class ScriptPowerShell {
         if (!script.delete()) {
             script.deleteOnExit();
         }
-
-        listener.getLogger().println(Constants.LOG_HEADER_S + "Script completed");
     }
 
     private String getProgram(String path) { return "powershell ".concat(path); }

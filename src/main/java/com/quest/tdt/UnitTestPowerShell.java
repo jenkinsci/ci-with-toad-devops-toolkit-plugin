@@ -1,8 +1,8 @@
 package com.quest.tdt;
 
-import com.quest.tdt.UnitTestDBObject;
 import com.quest.tdt.util.Constants;
 import com.quest.tdt.util.StreamThread;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import java.io.*;
@@ -28,7 +28,7 @@ public class UnitTestPowerShell {
         this.xml = xml;
     }
 
-    public void run(TaskListener listener) throws IOException {
+    public void run(Run<?, ?> run, TaskListener listener) throws IOException {
         InputStream resourceStream = this.getClass().getClassLoader().getResourceAsStream(Constants.PS_UT);
 
         // Create a temporary file to store our powershell resource stream.
@@ -49,8 +49,8 @@ public class UnitTestPowerShell {
         process.getOutputStream().close();
 
         // Get output from the script.
-        StreamThread outputStreamThread = new StreamThread(process.getInputStream(), listener, Constants.LOG_HEADER_UT);
-        StreamThread errorStreamThread = new StreamThread(process.getErrorStream(), listener, Constants.LOG_HEADER_UT_ERR);
+        StreamThread outputStreamThread = new StreamThread(process.getInputStream(), run, listener, Constants.LOG_HEADER_UT);
+        StreamThread errorStreamThread = new StreamThread(process.getErrorStream(), run, listener, Constants.LOG_HEADER_UT_ERR);
 
         outputStreamThread.start();
         errorStreamThread.start();

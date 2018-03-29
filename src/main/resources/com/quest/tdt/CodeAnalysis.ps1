@@ -1,4 +1,6 @@
-﻿Param (
+﻿#Requires -Version 2
+
+Param (
   [String] $Connection,
   [String[]] $Objects,
   [String[]] $Folders,
@@ -85,12 +87,14 @@ try {
     if ($DecodedFolder.Recurse) {
       Get-ChildItem $DecodedFolder.Path -filter $DecodedFolder.Filter -recurse | % {
         if (!$_.PSIsContainer) {
+          Write-Output "Preparing to analyze... $_"
           $TDT.CodeAnalysis.Files.Add($_.FullName)
         }
       }
     } else {
       Get-ChildItem $DecodedFolder.Path -filter $DecodedFolder.Filter | % {
         if (!$_.PSIsContainer) {
+          Write-Output "Preparing to analyze... $_"
           $TDT.CodeAnalysis.Files.Add($_.FullName)
         }
       }
@@ -99,6 +103,9 @@ try {
 
   # Set database object info to analyze
   ForEach($DecodedObject in $DecodedObjects) {
+    $Output = "{0}.{1} {2}" -f $DecodedObject.Owner, $DecodedObject.Name, $DecodedObject.Type
+    Write-Output "Preparing to analyze... $Output"
+
     $DBObject = $TDT.CodeAnalysis.DBObjects.Add()
     $DBObject.ObjectName  = $DecodedObject.Name
     $DBObject.ObjectOwner = $DecodedObject.Owner
@@ -108,6 +115,17 @@ try {
   # Execute Code Analysis
   $TDT.CodeAnalysis.Execute()
 
+  # Report failures to the caller
+  if ($TDT.CodeAnalysis.Errors.Count -gt 0) {
+    ForEach($Error in $TDT.CodeAnalysis.Errors) {
+      Write-Output $Error
+      # This will be interpreted by the caller to fail the build step
+      Write-Output 'FAILURE'
+    }
+  }
+} catch {
+  Write-Output $_.Exception.Message
+  Write-Output 'FAILURE'
 } finally {
   $TDT.Quit()
 }

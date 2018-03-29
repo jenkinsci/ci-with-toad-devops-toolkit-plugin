@@ -70,7 +70,7 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
         listener.getLogger().println(vars.expand(output));
 
         ScriptPowerShell script = new ScriptPowerShell(expConnection, expFilePath, maxRows, expOutput);
-        script.run(listener);
+        script.run(run, listener);
 
         if (isSourceTypeScript) {
             if (!tempFile.delete()) {
