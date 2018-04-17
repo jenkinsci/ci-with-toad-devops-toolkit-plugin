@@ -34,12 +34,12 @@
      -->
     </properties>
     <name>Continuous Integration with Toad DevOps Toolkit</name>
-    <description>Allows users to automate database lifecycle management operations.</description>
+    <description>Enables Oracle users to automate various DevOps tasks such as performing PL/SQL code analysis, running units tests, and executing scripts.</description>
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
     <licenses>
         <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
+            <name>Continuous Integration with Toad DevOps Toolkit License Agreement</name>
+            <url>https://github.com/QSFT/ci-with-toad-devops-toolkit-plugin/blob/master/LICENSE</url>
         </license>
     </licenses>
     <dependencies>
