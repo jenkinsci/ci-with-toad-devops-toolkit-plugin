@@ -30,13 +30,17 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
     private String output;
 
     @DataBoundConstructor
-    public ScriptBuilder(String connection, String script, String file, String sourceType, int maxRows, String output) {
+    public ScriptBuilder(String connection, String script, String file, String sourceType, String limitMaxRows, int maxRows, String output) {
         this.connection = connection;
         this.script = script;
         this.file = file;
         this.sourceType = sourceType;
         this.maxRows = maxRows;
         this.output = output;
+
+        if (!limitMaxRows.equals("true")) {
+            this.maxRows = 0;
+        }
     }
 
     public String getConnection() { return connection; }
@@ -47,6 +51,7 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
     public String getOutput() { return output; };
 
     public String isSourceType(String sourceType) { return this.sourceType.equals(sourceType) ? "true" : ""; }
+    public String limitMaxRows() { return this.maxRows > 0 ? "true" : ""; };
 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
         String filePath = file;

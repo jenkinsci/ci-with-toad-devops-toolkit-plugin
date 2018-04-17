@@ -37,9 +37,11 @@
                 <f:entry title="${%File path}" field="output">
                     <f:textbox />
                 </f:entry>
-                <f:entry title="${%Maximum returned rows}">
-                    <f:number field="maxRows" default="10" />
-                </f:entry>
+                <f:optionalBlock name="limitMaxRows" value="true" title="${%Limit the number of returned rows}" checked="${instance.limitMaxRows()}" inline="true">
+                    <f:entry title="${%Maximum returned rows}" field="maxRows">
+                        <f:number />
+                    </f:entry>
+                </f:optionalBlock>
             </table>
         </fieldset>
     </f:block>
