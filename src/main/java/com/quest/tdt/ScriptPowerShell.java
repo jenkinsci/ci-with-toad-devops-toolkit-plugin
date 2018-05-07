@@ -6,6 +6,7 @@ import com.quest.tdt.util.StreamThread;
 import com.quest.tdt.util.Constants;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
 
@@ -69,7 +70,7 @@ public class ScriptPowerShell {
     private String getProgram(String path) { return "powershell ".concat(path); }
 
     private String getConnectionArgument() {
-        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes()));
+        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getMaxRowsArgument() {
@@ -77,10 +78,10 @@ public class ScriptPowerShell {
     }
 
     private String getFilePathArgument() {
-        return " -inputFile ".concat(Base64.getEncoder().encodeToString(filePath.getBytes()));
+        return " -inputFile ".concat(Base64.getEncoder().encodeToString(filePath.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getOutputPathArgument() {
-        return outputPath.isEmpty() ? "" : " -outputFile ".concat(Base64.getEncoder().encodeToString(outputPath.getBytes()));
+        return outputPath.isEmpty() ? "" : " -outputFile ".concat(Base64.getEncoder().encodeToString(outputPath.getBytes(StandardCharsets.UTF_8)));
     }
 }

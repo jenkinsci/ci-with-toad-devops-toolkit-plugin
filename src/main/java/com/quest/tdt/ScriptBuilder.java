@@ -15,10 +15,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class ScriptBuilder extends Builder implements SimpleBuildStep {
     private String connection;
@@ -86,11 +84,11 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
 
     private File createTempScriptFile(String content) throws IOException {
         File file = File.createTempFile("tdt-", ".sql");
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
+        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath()), StandardCharsets.UTF_8);
         try {
-            bufferedWriter.write(script);
+            writer.write(script);
         } finally {
-            bufferedWriter.close();
+            writer.close();
         }
         return  file;
     }

@@ -8,6 +8,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class UnitTestDBObject extends AbstractDescribableImpl<UnitTestDBObject> {
@@ -47,8 +48,8 @@ public class UnitTestDBObject extends AbstractDescribableImpl<UnitTestDBObject> 
      * @return a string representation of the object.
      */
     public String toString() {
-        String encodedOwner = Base64.getEncoder().encodeToString(getOwner().getBytes());
-        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes());
+        String encodedOwner = Base64.getEncoder().encodeToString(getOwner().getBytes(StandardCharsets.UTF_8));
+        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes(StandardCharsets.UTF_8));
 
         return String.format("%s.%s", encodedOwner, encodedName);
     }

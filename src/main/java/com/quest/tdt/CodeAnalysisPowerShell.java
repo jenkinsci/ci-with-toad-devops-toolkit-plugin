@@ -7,6 +7,7 @@ import com.quest.tdt.util.StreamThread;
 import com.quest.tdt.util.Constants;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Base64;
@@ -83,7 +84,7 @@ public class CodeAnalysisPowerShell {
     }
 
     private String getConnectionArgument() {
-        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes()));
+        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getObjectsArgument() {
@@ -118,12 +119,12 @@ public class CodeAnalysisPowerShell {
 
     private String getReportNameArgument() {
         return report.getName().isEmpty()
-                ? "" : " -reportName ".concat(Base64.getEncoder().encodeToString(report.getName().getBytes()));
+                ? "" : " -reportName ".concat(Base64.getEncoder().encodeToString(report.getName().getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getReportFolder() {
         return report.getFolder().isEmpty()
-                ? "" : " -reportFolder ".concat(Base64.getEncoder().encodeToString(report.getFolder().getBytes()));
+                ? "" : " -reportFolder ".concat(Base64.getEncoder().encodeToString(report.getFolder().getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getReportFormats() {

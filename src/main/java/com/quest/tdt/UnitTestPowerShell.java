@@ -6,6 +6,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
@@ -74,7 +75,7 @@ public class UnitTestPowerShell {
     private String getProgram(String path) { return "powershell ".concat(path); }
 
     private String getConnectionArgument() {
-        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes()));
+        return " -connection ".concat(Base64.getEncoder().encodeToString(connection.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getObjectsArgument() {
@@ -91,7 +92,7 @@ public class UnitTestPowerShell {
     }
 
     private String getOutputPathArgument() {
-        return folder.isEmpty() ? "" : " -outputPath ".concat(Base64.getEncoder().encodeToString(folder.getBytes()));
+        return folder.isEmpty() ? "" : " -outputPath ".concat(Base64.getEncoder().encodeToString(folder.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getReportFormatArguments() {

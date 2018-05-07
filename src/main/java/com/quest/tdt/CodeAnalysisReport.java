@@ -8,6 +8,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisReport> {
@@ -64,8 +65,8 @@ public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisRepo
      * @return a string representation of the object.
      */
     public String toString() {
-        String encodedFolder = Base64.getEncoder().encodeToString(getFolder().getBytes());
-        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes());
+        String encodedFolder = Base64.getEncoder().encodeToString(getFolder().getBytes(StandardCharsets.UTF_8));
+        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes(StandardCharsets.UTF_8));
 
         return String.format("%s.%s", encodedFolder, encodedName);
     }
