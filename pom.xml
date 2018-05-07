@@ -102,9 +102,9 @@
 
     <url>https://wiki.jenkins.io/display/JENKINS/Continuous+Integration+with+Toad+DevOps+Toolkit+Plugin</url>
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <connection>scm:git:git://github.com/jenkinsci/ci-with-toad-devops-toolkit-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/ci-with-toad-devops-toolkit-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/ci-with-toad-devops-toolkit-plugin</url>
       <tag>ci-with-toad-devops-toolkit-1.0</tag>
   </scm>
 
