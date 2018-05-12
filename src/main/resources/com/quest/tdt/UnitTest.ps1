@@ -71,7 +71,7 @@ try {
     Write-Output ("Running... {0} Status: {1}" -f $UnitTest.Name, $UnitTest.LastRunStatus)
 
     # Report failures to the caller
-    if ($RunStatus -ne 'SUCCESS') {
+    if ($UnitTest.LastRunStatus -ne 'SUCCESS') {
       # This will be interpreted by the caller to fail the build step
       Write-Output 'FAILURE'
     }
