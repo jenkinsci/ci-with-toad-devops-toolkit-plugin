@@ -21,15 +21,17 @@ public class CodeAnalysisPowerShell {
     private List<CodeAnalysisDBObjectFolder> objectFolders;
     private int ruleSet;
     private CodeAnalysisReport report;
+    private CodeAnalysisFailConditions failConditions;
 
     public CodeAnalysisPowerShell(
             String connection, List<CodeAnalysisDBObject> objects, List<CodeAnalysisDBObjectFolder> objectFolders,
-            int ruleSet, CodeAnalysisReport report) {
+            int ruleSet, CodeAnalysisReport report, CodeAnalysisFailConditions failConditions) {
         this.connection = connection;
         this.objects = objects;
         this.objectFolders = objectFolders;
         this.ruleSet = ruleSet;
         this.report = report;
+        this.failConditions = failConditions;
     }
 
     public void run(Run<?, ?> run, TaskListener listener) throws IOException {
@@ -47,7 +49,8 @@ public class CodeAnalysisPowerShell {
                 .concat(getRuleSetArgument())
                 .concat(getReportNameArgument())
                 .concat(getReportFolder())
-                .concat(getReportFormats());
+                .concat(getReportFormats()
+                .concat(getFailConditionsArguments()));
 
         listener.getLogger().println(Constants.LOG_HEADER_CA + "Preparing analysis...");
 
@@ -132,5 +135,15 @@ public class CodeAnalysisPowerShell {
                 .concat(report.getJson() ? " -json" : "")
                 .concat(report.getXls() ? " -xls" : "")
                 .concat(report.getXml() ? " -xml" : "");
+    }
+
+    private String getFailConditionsArguments() {
+        return " -halstead ".concat(Integer.toString(failConditions.getHalstead()))
+                .concat(" -maintainability ".concat(Integer.toString(failConditions.getMaintainability())))
+                .concat(" -mcCabe ".concat(Integer.toString(failConditions.getMcCabe())))
+                .concat(" -TCR ".concat(Integer.toString(failConditions.getTCR()))
+                .concat(failConditions.getRuleViolations() ? " -ruleViolations" : "")
+                .concat(failConditions.getSyntaxErrors() ? " -syntaxErrors" : "")
+                .concat(failConditions.getIgnoreWrappedPackages() ? " -ignoreWrappedPackages" : ""));
     }
 }

@@ -10,7 +10,15 @@ Param (
   [Switch] $HTML,
   [Switch] $JSON,
   [Switch] $XLS,
-  [Switch] $XML
+  [Switch] $XML,
+  # Fail conditions
+  [Int] $Halstead,
+  [Int] $Maintainability,
+  [Int] $McCabe,
+  [Int] $TCR,
+  [Switch] $RuleViolations,
+  [Switch] $SyntaxErrors,
+  [Switch] $IgnoreWrappedPackages
 )
 
 # Decode Oracle connection string
@@ -82,6 +90,75 @@ try {
   $TDT.CodeAnalysis.ReportFormats.IncludeXLS = $XLS
   $TDT.CodeAnalysis.ReportFormats.IncludeXML = $XML
 
+  Write-Output "Setting fail conditions..."
+
+  $TDT.CodeAnalysis.FailConditions.CheckHalstead = $Halstead -gt 0
+  if ($TDT.CodeAnalysis.FailConditions.CheckHalstead) {
+    $TDT.CodeAnalysis.FailConditions.HalsteadLevel = $Halstead - 1
+
+    $Output = "Fail condition... Halstead: {0}"
+    switch ($TDT.CodeAnalysis.FailConditions.HalsteadLevel) {
+      0 { $Output = $Output -f 'Reasonable (< 1000)' }
+      1 { $Output = $Output -f 'Challenging (1001 - 3000)' }
+      2 { $Output = $Output -f 'Too Complex (> 3000)' }
+    }
+    Write-Output $Output
+  }
+
+  $TDT.CodeAnalysis.FailConditions.CheckMaintainability = $Maintainability -gt 0
+  if ($TDT.CodeAnalysis.FailConditions.CheckMaintainability) {
+    $TDT.CodeAnalysis.FailConditions.MaintainabilityLevel = $Maintainability - 1
+
+    $Output = "Fail condition... Maintainability: {0}"
+    switch ($TDT.CodeAnalysis.FailConditions.MaintainabilityLevel) {
+      0 { $Output = $Output -f 'Highly maintainable (> 85)' }
+      1 { $Output = $Output -f 'Moderate maintainability (65 - 85)' }
+      2 { $Output = $Output -f 'Difficult to maintain (< 65)' }
+    }
+    Write-Output $Output
+  }
+
+  $TDT.CodeAnalysis.FailConditions.CheckMcCabe = $McCabe -gt 0
+  if ($TDT.CodeAnalysis.FailConditions.CheckMcCabe) {
+    $TDT.CodeAnalysis.FailConditions.McCabeLevel = $McCabe - 1
+
+    $Output = "Fail condition... McCabes: {0}"
+    switch ($TDT.CodeAnalysis.FailConditions.McCabeLevel) {
+      0 { $Output = $Output -f 'Simple program, small risk (< 11)' }
+      1 { $Output = $Output -f 'More complex program, moderate risk (11 - 20)' }
+      2 { $Output = $Output -f 'Very complex program, high risk (21 - 50)' }
+      3 { $Output = $Output -f 'Untestable program, very high risk (> 50)' }
+    }
+    Write-Output $Output
+  }
+
+  $TDT.CodeAnalysis.FailConditions.CheckTCR = $TCR -gt 0
+  if ($TDT.CodeAnalysis.FailConditions.CheckTCR) {
+    $TDT.CodeAnalysis.FailConditions.TCRLevel = $TCR - 1
+
+    $Output = "Fail condition... Toad Code Rating: {0}"
+    switch ($TDT.CodeAnalysis.FailConditions.TCRLevel) {
+      0 { $Output = $Output -f 'Good (< 2)' }
+      1 { $Output = $Output -f 'OK (2)' }
+      2 { $Output = $Output -f 'Fair (3)' }
+      3 { $Output = $Output -f 'Poor (> 3)' }
+    }
+    Write-Output $Output
+  }
+
+  $TDT.CodeAnalysis.FailConditions.CheckRuleViolations = $RuleViolations
+  if ($TDT.CodeAnalysis.FailConditions.CheckRuleViolations) {
+    Write-Output 'Fail condition... Rule violations'
+  }
+  $TDT.CodeAnalysis.FailConditions.CheckSyntaxErrors = $SyntaxErrors
+  if ($TDT.CodeAnalysis.FailConditions.CheckSyntaxErrors) {
+    Write-Output 'Fail condition... Syntax errors'
+  }
+  $TDT.CodeAnalysis.FailConditions.IgnoreWrappedPackages = $IgnoreWrappedPackages
+  if ($TDT.CodeAnalysis.FailConditions.IgnoreWrappedPackages) {
+    Write-Output 'Fail condition... Ignore wrapped packages'
+  }
+
   # Set files to analyze
   ForEach($DecodedFolder in $DecodedFolders) {
     if ($DecodedFolder.Recurse) {
@@ -117,11 +194,10 @@ try {
 
   # Report failures to the caller
   if ($TDT.CodeAnalysis.Errors.Count -gt 0) {
-    ForEach($Error in $TDT.CodeAnalysis.Errors) {
-      Write-Output $Error
-      # This will be interpreted by the caller to fail the build step
-      Write-Output 'FAILURE'
-    }
+    Write-Output 'Code analysis contained one or more errors...'
+    Write-Output $TDT.CodeAnalysis.Errors.ToString()
+    # This will be interpreted by the caller to fail the build step
+    Write-Output 'FAILURE'
   }
 } catch {
   Write-Output $_.Exception.Message

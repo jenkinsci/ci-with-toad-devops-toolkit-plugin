@@ -25,13 +25,19 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
     private CodeAnalysisReport report;
     private int ruleSet;
 
+    // Fail conditions
+    private CodeAnalysisFailConditions failConditions;
+
     @DataBoundConstructor
-    public CodeAnalysisBuilder(String connection, List<CodeAnalysisDBObject> objects, List<CodeAnalysisDBObjectFolder> objectFolders, CodeAnalysisReport report, int ruleSet) {
+    public CodeAnalysisBuilder(String connection, List<CodeAnalysisDBObject> objects,
+                               List<CodeAnalysisDBObjectFolder> objectFolders, CodeAnalysisReport report, int ruleSet,
+                               CodeAnalysisFailConditions failConditions) {
         this.connection = connection;
         this.objects = objects == null ? new ArrayList<CodeAnalysisDBObject>() : new ArrayList<CodeAnalysisDBObject>(objects);
         this.objectFolders = objectFolders == null ? new ArrayList<CodeAnalysisDBObjectFolder>() : new ArrayList<CodeAnalysisDBObjectFolder>(objectFolders);
         this.report = report;
         this.ruleSet = ruleSet;
+        this.failConditions = failConditions;
     }
 
     public String getConnection() { return connection; }
@@ -39,6 +45,9 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
     public List<CodeAnalysisDBObjectFolder> getObjectFolders() { return objectFolders; }
     public CodeAnalysisReport getReport() { return report; }
     public int getRuleSet() { return ruleSet; }
+    public CodeAnalysisFailConditions getFailConditions() {
+        return failConditions;
+    }
 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
@@ -49,7 +58,7 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
         ArrayList<CodeAnalysisDBObjectFolder> expObjectFolders = expandObjectFolders(vars, objectFolders);
         CodeAnalysisReport expReport = expandReport(vars, report);
 
-        CodeAnalysisPowerShell powerShell = new CodeAnalysisPowerShell(expConnection, expObjects, expObjectFolders, ruleSet, expReport);
+        CodeAnalysisPowerShell powerShell = new CodeAnalysisPowerShell(expConnection, expObjects, expObjectFolders, ruleSet, expReport, failConditions);
         powerShell.run(run, listener);
     }
 

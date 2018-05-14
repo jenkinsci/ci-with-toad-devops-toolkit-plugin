@@ -1,0 +1,21 @@
+<?jelly escape-by-default="true"?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
+    <p>Options that determine whether or not source control will pass or fail code analysis checks.</p>
+
+    <f:entry field="halstead" title="${%Halstead}" default="0"><f:select/></f:entry>
+    <f:entry field="maintainability" title="${%Maintainability}"><f:select/></f:entry>
+    <f:entry field="mcCabe" title="${%McCabes}"><f:select/></f:entry>
+    <f:entry field="TCR" title="${%Toad Code Rating}"><f:select/></f:entry>
+
+    <f:entry title="Rule violations" field="ruleViolations">
+        <f:checkbox />
+    </f:entry>
+
+    <f:entry title="Syntax errors" field="syntaxErrors">
+        <f:checkbox />
+    </f:entry>
+
+    <f:entry title="Ignore wrapped packages" field="ignoreWrappedPackages">
+        <f:checkbox />
+    </f:entry>
+</j:jelly>

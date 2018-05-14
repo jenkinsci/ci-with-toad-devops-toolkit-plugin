@@ -30,6 +30,15 @@
 
     <f:block>
         <fieldset>
+            <legend>${%Fail Conditions}</legend>
+            <table style="width: 100%">
+                <f:property field="failConditions" />
+            </table>
+        </fieldset>
+    </f:block>
+
+    <f:block>
+        <fieldset>
             <legend>${%Report}</legend>
             <table style="width:100%">
                 <f:property field="report" />
