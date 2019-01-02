@@ -199,6 +199,18 @@ try {
     # This will be interpreted by the caller to fail the build step
     Write-Output 'FAILURE'
   }
+
+  # Toad DevOps Toolkit 1.2+ includes a results property which contains rule violation details
+  if (Get-Member -InputObject $TDT.CodeAnalysis -Name "Results") {
+    # Report rule violations to the caller
+    if ($TDT.CodeAnalysis.FailConditions.CheckRuleViolations -and $TDT.CodeAnalysis.Results.RuleViolations.Count -gt 0) {
+      Write-Output 'Code analysis contained one or more rule violations...'
+      Write-Output $TDT.CodeAnalysis.Results.RuleViolations.ToString()
+      # This will be interpreted by the caller to fail the build step
+      Write-Output 'FAILURE'
+    }
+  }
+
 } catch {
   Write-Output $_.Exception.Message
   Write-Output 'FAILURE'
