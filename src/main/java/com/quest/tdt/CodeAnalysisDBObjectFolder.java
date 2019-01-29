@@ -9,9 +9,10 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.util.Base64;
 
-public class CodeAnalysisDBObjectFolder extends AbstractDescribableImpl<CodeAnalysisDBObjectFolder> {
+public class CodeAnalysisDBObjectFolder extends AbstractDescribableImpl<CodeAnalysisDBObjectFolder> implements Serializable {
     private String path;
     private String filter;
     private boolean recurse;

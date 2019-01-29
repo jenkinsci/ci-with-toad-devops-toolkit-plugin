@@ -9,20 +9,19 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.util.Base64;
 
-public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisReport> {
+public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisReport> implements Serializable {
     private String name;
-    private String folder;
     private boolean html;
     private boolean json;
     private boolean xls;
     private boolean xml;
 
     @DataBoundConstructor
-    public CodeAnalysisReport(String name, String folder, boolean html, boolean json, boolean xls, boolean xml) {
+    public CodeAnalysisReport(String name, boolean html, boolean json, boolean xls, boolean xml) {
         this.name = name;
-        this.folder = folder;
         this.html = html;
         this.json = json;
         this.xls = xls;
@@ -30,7 +29,6 @@ public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisRepo
     }
 
     public String getName() { return name; }
-    public String getFolder() { return folder; }
     public boolean getHtml() { return html; }
     public boolean getJson() { return json; }
     public boolean getXls() { return xls; }
@@ -42,11 +40,6 @@ public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisRepo
         public FormValidation doCheckName(@QueryParameter String value) {
             return value.isEmpty()
                     ? FormValidation.warning("Name must not be empty to receive report(s).") : FormValidation.ok();
-        }
-
-        public FormValidation doCheckFolder(@QueryParameter String value) {
-            return value.isEmpty()
-                    ? FormValidation.warning("Output folder must not be empty to receive report(s).") : FormValidation.ok();
         }
 
         public FormValidation doCheckXml(@QueryParameter boolean value, @QueryParameter boolean html,
@@ -65,9 +58,8 @@ public class CodeAnalysisReport extends AbstractDescribableImpl<CodeAnalysisRepo
      * @return a string representation of the object.
      */
     public String toString() {
-        String encodedFolder = Base64.getEncoder().encodeToString(getFolder().getBytes(StandardCharsets.UTF_8));
-        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes(StandardCharsets.UTF_8));
 
-        return String.format("%s.%s", encodedFolder, encodedName);
+        String encodedName = Base64.getEncoder().encodeToString(getName().getBytes(StandardCharsets.UTF_8));
+        return encodedName;
     }
 }

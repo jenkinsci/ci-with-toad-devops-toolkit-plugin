@@ -1,6 +1,5 @@
 package com.quest.tdt;
 
-import com.quest.tdt.util.Constants;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -11,9 +10,10 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.util.Base64;
 
-public class CodeAnalysisDBObject extends AbstractDescribableImpl<CodeAnalysisDBObject> {
+public class CodeAnalysisDBObject extends AbstractDescribableImpl<CodeAnalysisDBObject> implements Serializable {
     private String name;
     private String owner;
     private String type;

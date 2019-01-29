@@ -5,36 +5,37 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
-public class ScriptBuilder extends Builder implements SimpleBuildStep {
+public class ScriptBuilder extends Builder implements SimpleBuildStep, Serializable {
     private String connection;
     private String script;
     private String file;
     // Used for determining between the checked radio blocks: script, file.
     private String sourceType;
+    private String outputName;
     private int maxRows;
-    private String output;
 
     @DataBoundConstructor
-    public ScriptBuilder(String connection, String script, String file, String sourceType, String limitMaxRows, int maxRows, String output) {
+    public ScriptBuilder(String connection, String script, String file, String sourceType, String outputName, String limitMaxRows, int maxRows) {
         this.connection = connection;
         this.script = script;
         this.file = file;
         this.sourceType = sourceType;
+        this.outputName = outputName;
         this.maxRows = maxRows;
-        this.output = output;
 
         if (!limitMaxRows.equals("true")) {
             this.maxRows = 0;
@@ -45,52 +46,34 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
     public String getScript() { return sourceType.equals("script") ? script : ""; }
     public String getFile() { return sourceType.equals("file") ? file : ""; }
     public String getSourceType() { return sourceType; };
+    public String getOutputName() { return outputName; };
     public int getMaxRows() { return maxRows; };
-    public String getOutput() { return output; };
 
     public String isSourceType(String sourceType) { return this.sourceType.equals(sourceType) ? "true" : ""; }
     public String limitMaxRows() { return this.maxRows > 0 ? "true" : ""; };
 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-        String filePath = file;
 
-        File tempFile = null;
+        String PathOrSource = file;
         boolean isSourceTypeScript = isSourceType("script").equals("true");
-
         if (isSourceTypeScript) {
-            tempFile = createTempScriptFile(script);
-            filePath = tempFile.getAbsolutePath();
+            PathOrSource = script;
         }
 
         // Expand any environment variables.
         EnvVars vars = run.getEnvironment(listener);
-
         String expConnection = vars.expand(connection);
-        String expFilePath = vars.expand(filePath);
-        String expOutput = vars.expand(output);
+        String expPathOrSource = vars.expand(PathOrSource);
+        String expName = vars.expand(outputName);
 
-        listener.getLogger().println(output);
-        listener.getLogger().println(vars.expand(output));
+        run.setResult(launcher.getChannel().call(new MasterToSlaveCallable<Result, IOException>() {
+            public Result call() throws IOException {
 
-        ScriptPowerShell script = new ScriptPowerShell(expConnection, expFilePath, maxRows, expOutput);
-        script.run(run, listener);
-
-        if (isSourceTypeScript) {
-            if (!tempFile.delete()) {
-                tempFile.deleteOnExit();
+                ScriptPowerShell script = new ScriptPowerShell(expConnection, isSourceTypeScript, expPathOrSource, expName, maxRows);
+                return script.run(workspace, listener);
             }
-        }
-    }
+        }));
 
-    private File createTempScriptFile(String content) throws IOException {
-        File file = File.createTempFile("tdt-", ".sql");
-        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath()), StandardCharsets.UTF_8);
-        try {
-            writer.write(script);
-        } finally {
-            writer.close();
-        }
-        return  file;
     }
 
     @Extension
@@ -108,9 +91,9 @@ public class ScriptBuilder extends Builder implements SimpleBuildStep {
             return value.isEmpty() ? FormValidation.error(Messages.FilePathEmpty()) : FormValidation.ok();
         }
 
-        public FormValidation doCheckOutput(@QueryParameter String value) {
+        public FormValidation doCheckOutputName(@QueryParameter String value) {
             return value.isEmpty()
-                    ? FormValidation.warning(Messages.FilePathOutputEmpty()) : FormValidation.ok();
+                    ? FormValidation.warning("Name must not be empty to receive output.") : FormValidation.ok();
         }
 
         @Override

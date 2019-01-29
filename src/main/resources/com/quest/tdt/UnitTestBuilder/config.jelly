@@ -25,26 +25,15 @@
 
     <f:block>
         <fieldset>
-            <legend>${%Report}</legend>
+            <legend>${%Report Format}</legend>
             <table style="width:100%">
-                <f:entry title="${%Output directory}" field="folder">
-                    <f:textbox />
+                <f:entry title="TXT" field="txt">
+                    <f:checkbox />
                 </f:entry>
 
-                <f:block>
-                    <fieldset>
-                        <legend>${%Format}</legend>
-                        <table style="width:100%">
-                            <f:entry title="TXT" field="txt">
-                                <f:checkbox />
-                            </f:entry>
-
-                            <f:entry title="XML" field="xml">
-                                <f:checkbox />
-                            </f:entry>
-                        </table>
-                    </fieldset>
-                </f:block>
+                <f:entry title="XML" field="xml">
+                    <f:checkbox />
+                </f:entry>
             </table>
         </fieldset>
     </f:block>

@@ -1,2 +1,6 @@
+# Ignore IntelliJ files
+.idea/
+**/*.iml
+
 **/target/
 **/work/

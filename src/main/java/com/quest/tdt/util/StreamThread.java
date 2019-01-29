@@ -7,20 +7,21 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 
 public class StreamThread extends Thread {
     private InputStream inputStream;
-    private Run<?, ?> run;
     private TaskListener listener;
     private String type;
+    private Result result;
 
-    public StreamThread(InputStream inputStream, Run<?, ?> run, TaskListener listener, String type) {
+    public Result getResult() { return result; };
+
+    public StreamThread(InputStream inputStream, TaskListener listener, String type, Result result) {
         this.inputStream = inputStream;
-        this.run = run;
         this.listener = listener;
         this.type = type;
+        this.result = result;
     }
 
     public void run() {
@@ -31,9 +32,14 @@ public class StreamThread extends Thread {
             while ((line = bufferedReader.readLine()) != null) {
                 // Failure is a keyword that denotes that we should fail the build step.
                 if (line.equals(Constants.FAILURE)) {
-                    run.setResult(Result.FAILURE);
+                    result = Result.FAILURE;
                 } else {
                     listener.getLogger().println(type + line);
+
+                    // If this is processing the error stream, then set result to failure
+                    if (type.contains("Error")) {
+                        result = Result.FAILURE;
+                    }
                 }
             }
         } catch (IOException e) {

@@ -1,6 +1,7 @@
 package com.quest.tdt;
 
-import hudson.model.Run;
+import hudson.FilePath;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 
 import com.quest.tdt.util.StreamThread;
@@ -9,13 +10,15 @@ import com.quest.tdt.util.Constants;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Base64;
 import java.util.StringJoiner;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class CodeAnalysisPowerShell {
+public class CodeAnalysisPowerShell implements Serializable  {
     private String connection;
     private List<CodeAnalysisDBObject> objects;
     private List<CodeAnalysisDBObjectFolder> objectFolders;
@@ -30,16 +33,22 @@ public class CodeAnalysisPowerShell {
         this.objects = objects;
         this.objectFolders = objectFolders;
         this.ruleSet = ruleSet;
+
         this.report = report;
         this.failConditions = failConditions;
     }
 
-    public void run(Run<?, ?> run, TaskListener listener) throws IOException {
+    public Result run(final FilePath workspace, final TaskListener listener) throws IOException {
+
         InputStream resourceStream = this.getClass().getClassLoader().getResourceAsStream(Constants.PS_CA);
 
-        // Create a temporary file to store our powershell resource stream.
-        File script = File.createTempFile("tdt-ca-", ".ps1");
+        // Create a temporary directory to hold scripts and reports
+        Path tempdirectory = Files.createTempDirectory("tdt-ca-");
+
+        // Create a temporary file to store our powershell resource stream
+        File script = File.createTempFile("tdt-ca-", ".ps1", new File(tempdirectory.toString()));
         Files.copy(resourceStream, script.getAbsoluteFile().toPath(), REPLACE_EXISTING);
+        String BaseReportName = report.getName();
 
         // Create our command with appropriate arguments.
         String command = getProgram(script.getAbsolutePath())
@@ -48,20 +57,19 @@ public class CodeAnalysisPowerShell {
                 .concat(getObjectFoldersArgument())
                 .concat(getRuleSetArgument())
                 .concat(getReportNameArgument())
-                .concat(getReportFolder())
+                .concat(" -reportFolder ".concat(Base64.getEncoder().encodeToString( tempdirectory.toString().getBytes(StandardCharsets.UTF_8))))
                 .concat(getReportFormats()
                 .concat(getFailConditionsArguments()));
 
         listener.getLogger().println(Constants.LOG_HEADER_CA + "Preparing analysis...");
 
+        Result result = Result.SUCCESS;
         Runtime runtime = Runtime.getRuntime();
         Process process = runtime.exec(command);
         process.getOutputStream().close();
 
-        StreamThread outputStreamThread = new StreamThread(
-                process.getInputStream(), run, listener, Constants.LOG_HEADER_CA);
-        StreamThread errorStreamThread = new StreamThread(
-                process.getErrorStream(), run, listener, Constants.LOG_HEADER_CA_ERR);
+        StreamThread outputStreamThread = new StreamThread(process.getInputStream(), listener, Constants.LOG_HEADER_CA, result);
+        StreamThread errorStreamThread = new StreamThread(process.getErrorStream(), listener, Constants.LOG_HEADER_CA_ERR, result);
 
         outputStreamThread.start();
         errorStreamThread.start();
@@ -72,14 +80,40 @@ public class CodeAnalysisPowerShell {
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             listener.getLogger().println(Constants.LOG_HEADER_CA_ERR + writer.toString());
+
+            result = Result.ABORTED;
         }
 
-        // Clean up our temp script once we're finished.
-        if (!script.delete()) {
-            script.deleteOnExit();
-        }
+        // See if we received any errors during stream processing
+        if (outputStreamThread.getResult()!=Result.SUCCESS)
+            result = outputStreamThread.getResult();
+         else if (errorStreamThread.getResult()!=Result.SUCCESS)
+            result = errorStreamThread.getResult();
 
         listener.getLogger().println(Constants.LOG_HEADER_CA + "Analysis completed");
+
+        // Now copy the generated reports to the specified output directory, if specified
+        try {
+
+            FilePath reportpath = new FilePath(new File(tempdirectory.toString()));
+            reportpath.copyRecursiveTo(BaseReportName+".*", workspace);
+
+        } catch (InterruptedException e) {
+
+            StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            listener.getLogger().println(Constants.LOG_HEADER_CA_ERR + writer.toString());
+        }
+
+        // Delete the temporary directory and all contents
+        Files.walk(tempdirectory)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+
+
+        // return the result of the analysis
+        return result;
     }
 
     private String getProgram(String path) {
@@ -123,11 +157,6 @@ public class CodeAnalysisPowerShell {
     private String getReportNameArgument() {
         return report.getName().isEmpty()
                 ? "" : " -reportName ".concat(Base64.getEncoder().encodeToString(report.getName().getBytes(StandardCharsets.UTF_8)));
-    }
-
-    private String getReportFolder() {
-        return report.getFolder().isEmpty()
-                ? "" : " -reportFolder ".concat(Base64.getEncoder().encodeToString(report.getFolder().getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getReportFormats() {

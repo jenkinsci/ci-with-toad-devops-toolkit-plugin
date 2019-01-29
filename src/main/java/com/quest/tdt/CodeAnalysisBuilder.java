@@ -9,16 +9,18 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.io.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
+public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep, Serializable {
     private String connection;
     private List<CodeAnalysisDBObject> objects;
     private List<CodeAnalysisDBObjectFolder> objectFolders;
@@ -29,8 +31,7 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
     private CodeAnalysisFailConditions failConditions;
 
     @DataBoundConstructor
-    public CodeAnalysisBuilder(String connection, List<CodeAnalysisDBObject> objects,
-                               List<CodeAnalysisDBObjectFolder> objectFolders, CodeAnalysisReport report, int ruleSet,
+    public CodeAnalysisBuilder(String connection, List<CodeAnalysisDBObject> objects, List<CodeAnalysisDBObjectFolder> objectFolders, CodeAnalysisReport report, int ruleSet,
                                CodeAnalysisFailConditions failConditions) {
         this.connection = connection;
         this.objects = objects == null ? new ArrayList<CodeAnalysisDBObject>() : new ArrayList<CodeAnalysisDBObject>(objects);
@@ -49,17 +50,22 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
         return failConditions;
     }
 
-    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, final TaskListener listener) throws InterruptedException, IOException {
 
+        // Expand any environment variables.
         EnvVars vars = run.getEnvironment(listener);
-
         String expConnection = vars.expand(connection);
         ArrayList<CodeAnalysisDBObject> expObjects = expandObjects(vars, objects);
         ArrayList<CodeAnalysisDBObjectFolder> expObjectFolders = expandObjectFolders(vars, objectFolders);
         CodeAnalysisReport expReport = expandReport(vars, report);
 
-        CodeAnalysisPowerShell powerShell = new CodeAnalysisPowerShell(expConnection, expObjects, expObjectFolders, ruleSet, expReport, failConditions);
-        powerShell.run(run, listener);
+        run.setResult(launcher.getChannel().call(new MasterToSlaveCallable<Result, IOException>() {
+            public Result call() throws IOException {
+
+                    CodeAnalysisPowerShell powerShell = new CodeAnalysisPowerShell(expConnection, expObjects, expObjectFolders, ruleSet, expReport, failConditions);
+                    return powerShell.run(workspace, listener);
+                }
+           }));
     }
 
     private ArrayList<CodeAnalysisDBObject> expandObjects(EnvVars vars, List<CodeAnalysisDBObject> objects) {
@@ -89,7 +95,6 @@ public class CodeAnalysisBuilder extends Builder implements SimpleBuildStep {
     private CodeAnalysisReport expandReport(EnvVars vars, CodeAnalysisReport report) {
         CodeAnalysisReport expReport = new CodeAnalysisReport(
                                             vars.expand(report.getName()),
-                                            vars.expand(report.getFolder()),
                                             report.getHtml(),
                                             report.getJson(),
                                             report.getXls(),

@@ -195,7 +195,6 @@ try {
   # Report failures to the caller
   if ($TDT.CodeAnalysis.Errors.Count -gt 0) {
     Write-Output 'Code analysis contained one or more errors...'
-    Write-Output $TDT.CodeAnalysis.Errors.ToString()
     # This will be interpreted by the caller to fail the build step
     Write-Output 'FAILURE'
   }
@@ -205,7 +204,6 @@ try {
     # Report rule violations to the caller
     if ($TDT.CodeAnalysis.FailConditions.CheckRuleViolations -and $TDT.CodeAnalysis.Results.RuleViolations.Count -gt 0) {
       Write-Output 'Code analysis contained one or more rule violations...'
-      Write-Output $TDT.CodeAnalysis.Results.RuleViolations.ToString()
       # This will be interpreted by the caller to fail the build step
       Write-Output 'FAILURE'
     }

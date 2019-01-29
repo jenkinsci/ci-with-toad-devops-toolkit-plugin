@@ -9,8 +9,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
-public class CodeAnalysisFailConditions extends AbstractDescribableImpl<CodeAnalysisFailConditions> {
+
+public class CodeAnalysisFailConditions extends AbstractDescribableImpl<CodeAnalysisFailConditions> implements Serializable {
     private int halstead;
     private int maintainability;
     private int mcCabe;

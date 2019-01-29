@@ -34,7 +34,7 @@
         <fieldset>
             <legend>${%Output}</legend>
             <table style="width:100%">
-                <f:entry title="${%File path}" field="output">
+                <f:entry title="${%Name}" field="outputName">
                     <f:textbox />
                 </f:entry>
                 <f:optionalBlock name="limitMaxRows" value="true" title="${%Limit the number of returned rows}" checked="${instance.limitMaxRows()}" inline="true">

@@ -9,9 +9,10 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import java.io.Serializable;
 import java.util.Base64;
 
-public class UnitTestDBObject extends AbstractDescribableImpl<UnitTestDBObject> {
+public class UnitTestDBObject extends AbstractDescribableImpl<UnitTestDBObject> implements Serializable {
     private String name;
     private String owner;
 
